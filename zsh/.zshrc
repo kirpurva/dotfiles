@@ -125,3 +125,5 @@ alias ll='eza -lah --icons'
 alias cat='bat'
 alias cls='clear'
 
+eval "$(ssh-agent -s)" >/dev/null
+ssh-add ~/.ssh/sshkey 2>/dev/null
