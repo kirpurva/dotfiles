@@ -1,0 +1,421 @@
+Arch KDE Setup & Tweaks Reference
+System Setup
+Installed Arch Linux with KDE Plasma on Wayland
+Hybrid GPU setup:
+AMD iGPU
+NVIDIA GTX 1650 Mobile
+Brightness Fixes
+Problem
+
+KDE brightness keys capped screen brightness around ~30%.
+
+Fixes Applied
+Installed brightness utility
+sudo pacman -S brightnessctl
+Verified backlight device
+ls /sys/class/backlight/
+
+Detected:
+
+amdgpu_bl1
+Temporary brightness fix
+brightnessctl set 100%
+Kernel parameter added
+
+Added to GRUB:
+
+amdgpu.backlight=0
+GRUB regeneration
+sudo grub-mkconfig -o /boot/grub/grub.cfg
+Kitty Terminal Setup
+Installed Kitty
+sudo pacman -S kitty
+Kitty Configuration
+
+Config location:
+
+~/.config/kitty/kitty.conf
+Added:
+shell /usr/bin/zsh
+
+font_family JetBrainsMono Nerd Font
+font_size 14.0
+
+background_opacity 0.82
+confirm_os_window_close 0
+
+cursor_shape beam
+cursor_blink_interval 0.5
+
+enable_audio_bell no
+
+window_padding_width 10
+
+tab_bar_edge top
+tab_bar_style powerline
+Fonts
+Installed Nerd Font
+sudo pacman -S ttf-jetbrains-mono-nerd
+ZSH Setup
+Installed ZSH
+sudo pacman -S zsh
+Set default shell
+chsh -s /usr/bin/zsh
+Forced Kitty to use ZSH
+
+Added to kitty.conf:
+
+shell /usr/bin/zsh
+Oh My Zsh
+Installation
+sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+Powerlevel10k
+Installed theme
+git clone --depth=1 https://github.com/romkatv/powerlevel10k.git \
+${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}/themes/powerlevel10k
+Set theme in ~/.zshrc
+ZSH_THEME="powerlevel10k/powerlevel10k"
+ZSH Plugins
+Installed
+sudo pacman -S zsh-autosuggestions zsh-syntax-highlighting
+Added to ~/.zshrc
+source /usr/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh
+source /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+Powerlevel10k Instant Prompt Fix
+Added at top of ~/.zshrc
+typeset -g POWERLEVEL9K_INSTANT_PROMPT=quiet
+Cleared cache
+rm ~/.cache/p10k-instant-prompt-*
+Removed fastfetch from startup
+
+Reason:
+
+caused instant prompt warning
+unnecessary startup clutter
+Useful Aliases
+
+Added to ~/.zshrc:
+
+alias update='sudo pacman -Syu'
+alias install='sudo pacman -S'
+alias remove='sudo pacman -Rns'
+alias cleanup='sudo pacman -Rns $(pacman -Qtdq)'
+
+alias ls='eza --icons'
+alias ll='eza -lah --icons'
+alias cat='bat'
+alias cls='clear'
+Modern CLI Tools
+Installed
+sudo pacman -S \
+eza \
+bat \
+btop \
+fd \
+fzf \
+ripgrep \
+zoxide \
+lazygit
+Zoxide Setup
+
+Added to ~/.zshrc:
+
+eval "$(zoxide init zsh)"
+KDE + Tokyo Night Theming
+Installed Kvantum
+sudo pacman -S kvantum kvantum-qt5
+Installed Papirus Icons
+sudo pacman -S papirus-icon-theme
+Applied:
+Tokyo Night colors
+Tokyo Night Plasma style
+Tokyo Night GTK theme
+Papirus Dark icons
+Blur + translucency effects
+yay Installation
+Installed prerequisites
+sudo pacman -S --needed base-devel git
+Installed yay manually
+wget https://aur.archlinux.org/cgit/aur.git/snapshot/yay.tar.gz
+
+tar -xvzf yay.tar.gz
+cd yay
+makepkg -si
+GitHub/Git Troubleshooting
+Verified Git works
+git ls-remote https://github.com/git/git.git
+
+Issue turned out to be:
+
+incorrect repo URLs
+cached auth prompts
+not an actual Git problem
+Performance Tweaks
+Enabled SSD TRIM
+sudo systemctl enable --now fstrim.timer
+Swappiness Optimization
+Lowered swappiness
+
+Created:
+
+/etc/sysctl.d/99-swappiness.conf
+
+Added:
+
+vm.swappiness=10
+
+Applied:
+
+sudo sysctl --system
+zRAM Setup
+Installed
+sudo pacman -S zram-generator
+Created config
+/etc/systemd/zram-generator.conf
+
+Contents:
+
+[zram0]
+zram-size = ram / 2
+compression-algorithm = zstd
+EarlyOOM
+Installed
+sudo pacman -S earlyoom
+Enabled
+sudo systemctl enable --now earlyoom
+KDE Animation Speed
+Reduced animation speed
+kwriteconfig6 --file kwinrc --group Compositing --key AnimationSpeed 0.5
+Recommended Kernel Parameters
+
+Current recommended GRUB params:
+
+GRUB_CMDLINE_LINUX_DEFAULT="quiet splash amdgpu.backlight=0 nvidia_drm.modeset=1"
+Important Lessons Learned
+Many Linux issues are:
+wrong paths
+wrong repo names
+stale cache
+conflicting configs
+Don’t blindly copy optimization guides.
+Most valuable tweaks:
+SSD trim
+zRAM
+sane compositor settings
+proper GPU configuration
+cleaner workflow
+Minimal, clean startup > flashy startup clutter.
+
+TradingView Installation
+
+Installed TradingView Desktop from AUR:
+
+yay -S tradingview
+
+Learned:
+
+difference between pacman and yay
+official repos vs AUR
+Terminal/TUI Fixes
+Fixed corrupted terminal state
+
+Learned recovery commands:
+
+reset
+
+and:
+
+stty sane
+
+Used when Enter key started producing:
+
+^M
+Kitty Improvements
+
+Recommended additions to:
+
+~/.config/kitty/kitty.conf
+shell_integration enabled
+term xterm-kitty
+Docker Setup Finalization
+Enabled Docker daemon
+sudo systemctl enable --now docker
+Added user to docker group
+sudo usermod -aG docker $USER
+Verified Docker works
+docker run hello-world
+
+Learned:
+
+image vs container
+Docker portability
+containerized environments
+lightweight isolation vs VMs
+SSH & GitHub Setup
+Generated SSH key
+ssh-keygen -t ed25519 -C "your_email"
+Started SSH agent
+eval "$(ssh-agent -s)"
+Added SSH key
+ssh-add ~/.ssh/sshkey
+Verified GitHub SSH authentication
+ssh -T git@github.com
+
+Accepted GitHub host fingerprint.
+
+Result:
+
+passwordless GitHub auth
+cleaner Git workflow
+Dotfiles Repository Setup
+Created dotfiles repo
+mkdir ~/dotfiles
+git init
+Added configs
+
+Tracked:
+
+.zshrc
+kitty.conf
+tmux.conf
+nvim
+scripts
+Created install script
+
+Created reusable symlink installer:
+
+install.sh
+Connected GitHub repo
+
+Configured:
+
+remote origin
+upstream tracking
+merged unrelated histories
+
+Key commands learned:
+
+git pull origin main --allow-unrelated-histories --no-rebase
+git push --set-upstream origin main
+Minimal Neovim Config
+
+Created:
+
+~/.config/nvim/init.lua
+
+Added:
+
+line numbers
+relative numbers
+indentation
+clipboard integration
+mouse support
+smart case search
+truecolor
+leader key
+Timeshift Setup
+
+Installed Timeshift
+
+sudo pacman -S timeshift
+
+Configured:
+
+monthly snapshots
+initial snapshot created
+system restore safety net
+Firewall Setup
+
+Installed and enabled UFW
+
+sudo pacman -S ufw
+sudo systemctl enable --now ufw
+sudo ufw enable
+GRUB & Boot Polish
+Plymouth boot splash setup
+
+Installed:
+
+sudo pacman -S plymouth
+Modified mkinitcpio hooks
+
+Updated:
+
+HOOKS=(base systemd plymouth autodetect ...)
+Updated GRUB kernel params
+
+Final recommended:
+
+GRUB_CMDLINE_LINUX_DEFAULT="quiet splash loglevel=3 udev.log_level=3 nvidia_drm.modeset=1 amdgpu.backlight=0"
+Regenerated initramfs
+sudo mkinitcpio -P
+Regenerated GRUB
+sudo grub-mkconfig -o /boot/grub/grub.cfg
+KDE Splash Screen customization
+
+Customized:
+
+Boot splash screen
+KDE login/boot aesthetics
+
+Applied:
+
+cuts
+
+theme.
+
+GRUB Graphics Improvements
+
+Already configured:
+
+GRUB_TERMINAL_OUTPUT=gfxterm
+
+Using:
+
+graphical GRUB mode
+smoother splash transition
+Learned Linux Concepts
+Better understanding of:
+Docker
+Images vs containers
+SSH auth
+terminal state corruption
+Git upstreams/remotes
+AUR ecosystem
+boot process
+Plymouth vs KDE splash
+initramfs
+GRUB handoff
+kernel parameters
+system reproducibility via dotfiles
+Current System Status
+
+You now effectively have:
+
+Environment
+Arch Linux
+KDE Plasma Wayland
+Hybrid GPU tuned
+Modern themed desktop
+Terminal Stack
+Kitty
+Zsh
+Powerlevel10k
+tmux
+Neovim
+Dev Stack
+Git + SSH
+Docker
+AUR/yay
+dotfiles repo
+Safety & Reliability
+Timeshift snapshots
+UFW firewall
+Plymouth splash
+tuned boot params
+SSD/TRIM/zRAM tweaks
+Aesthetics
+Tokyo Night ecosystem
+Kvantum
+transparency/blur
+polished boot/login flow
