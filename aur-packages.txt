@@ -1,0 +1,4 @@
+plymouth-theme-cuts-git
+tradingview
+yay
+yay-debug
